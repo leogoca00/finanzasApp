@@ -49,16 +49,38 @@ export function TransactionForm({ open, onClose, onSubmit, accounts, categories 
     form.type === 'transfer' ? false : c.type === form.type
   );
 
+  const [error, setError] = useState('');
+
   const handleSubmit = async () => {
-    if (!form.amount || !form.account_id) return;
-    if (form.type !== 'transfer' && !form.category_id && filteredCategories.length > 0) return;
+    setError('');
+    if (!form.amount || parseFloat(form.amount) <= 0) {
+      setError('Ingresa un monto válido');
+      return;
+    }
+    if (!form.account_id) {
+      setError('Selecciona una cuenta');
+      return;
+    }
+    if (form.type === 'transfer') {
+      if (!form.destination_account_id) {
+        setError('Selecciona la cuenta destino');
+        return;
+      }
+      if (form.account_id === form.destination_account_id) {
+        setError('Las cuentas deben ser diferentes');
+        return;
+      }
+    } else if (!form.category_id && filteredCategories.length > 0) {
+      setError('Selecciona una categoría');
+      return;
+    }
 
     setLoading(true);
     try {
       await onSubmit(form);
       onClose();
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      setError(err?.message || 'Error al guardar');
     } finally {
       setLoading(false);
     }
@@ -148,6 +170,13 @@ export function TransactionForm({ open, onClose, onSubmit, accounts, categories 
           onChange={(v) => setForm((f) => ({ ...f, description: v }))}
           placeholder="Ej: Almuerzo con amigos"
         />
+
+        {/* Error message */}
+        {error && (
+          <div className="bg-red-50 text-red-600 text-sm px-3 py-2 rounded-xl">
+            {error}
+          </div>
+        )}
 
         {/* Submit */}
         <Button
