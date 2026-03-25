@@ -151,7 +151,7 @@ export function StatsView({ summary, prevSummary, month, year, onPrevMonth, onNe
                     padding: 8,
                     callbacks: {
                       title: (ctx) => `Día ${ctx[0].label}`,
-                      label: (ctx) => ` ${formatCOP(ctx.parsed.y)}`,
+                      label: (ctx) => ` ${formatCOP(ctx.parsed.y ?? 0)}`,
                     },
                   },
                 },
