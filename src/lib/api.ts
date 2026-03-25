@@ -18,13 +18,20 @@ export async function getAccountBalances(): Promise<AccountWithBalance[]> {
     .from('account_balances')
     .select('*');
   if (error) throw error;
-  return (data || []).map((a) => ({ ...a, balance: Number(a.balance) }));
+  return (data || []).map((a) => ({
+    ...a,
+    balance: Number(a.balance),
+    credit_limit: Number(a.credit_limit || 0),
+  }));
 }
 
-export async function createAccount(account: { name: string; icon: string; color: string }): Promise<Account> {
+export async function createAccount(account: { name: string; icon: string; color: string; account_type: string; credit_limit?: number }): Promise<Account> {
   const { data, error } = await supabase
     .from('accounts')
-    .insert(account)
+    .insert({
+      ...account,
+      credit_limit: account.credit_limit || 0,
+    })
     .select()
     .single();
   if (error) throw error;

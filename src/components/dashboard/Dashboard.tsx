@@ -18,7 +18,11 @@ interface Props {
 }
 
 export function Dashboard({ accounts, summary, month, year, onPrevMonth, onNextMonth }: Props) {
-  const totalBalance = accounts.reduce((sum, a) => sum + a.balance, 0);
+  const regularAccounts = accounts.filter((a) => a.account_type !== 'credit_card');
+  const creditCards = accounts.filter((a) => a.account_type === 'credit_card');
+  const totalBalance = regularAccounts.reduce((sum, a) => sum + a.balance, 0);
+  const totalDebt = creditCards.reduce((sum, a) => sum + Math.min(0, a.balance), 0);
+  const netWorth = totalBalance + totalDebt;
 
   const chartData = useMemo(() => {
     if (!summary || summary.byCategory.length === 0) return null;
@@ -42,16 +46,37 @@ export function Dashboard({ accounts, summary, month, year, onPrevMonth, onNextM
         <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/4" />
         <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/4" />
         <div className="relative">
-          <p className="text-brand-200 text-xs font-medium uppercase tracking-wider mb-1">Balance total</p>
-          <p className="text-3xl font-bold font-mono tracking-tight">{formatCOP(totalBalance)}</p>
-          <div className="mt-4 flex gap-3">
-            {accounts.filter(a => !a.is_archived).map((acc) => (
-              <div key={acc.id} className="bg-white/10 rounded-xl px-3 py-2 flex-1 min-w-0">
-                <p className="text-[10px] text-white/60 truncate">{acc.icon} {acc.name}</p>
-                <p className="text-sm font-semibold font-mono mt-0.5">{formatCOP(acc.balance)}</p>
-              </div>
-            ))}
-          </div>
+          <p className="text-brand-200 text-xs font-medium uppercase tracking-wider mb-1">Patrimonio neto</p>
+          <p className="text-3xl font-bold font-mono tracking-tight">{formatCOP(netWorth)}</p>
+
+          {/* Regular accounts */}
+          {regularAccounts.filter(a => !a.is_archived).length > 0 && (
+            <div className="mt-4 flex gap-3 overflow-x-auto">
+              {regularAccounts.filter(a => !a.is_archived).map((acc) => (
+                <div key={acc.id} className="bg-white/10 rounded-xl px-3 py-2 flex-1 min-w-0">
+                  <p className="text-[10px] text-white/60 truncate">{acc.icon} {acc.name}</p>
+                  <p className="text-sm font-semibold font-mono mt-0.5">{formatCOP(acc.balance)}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Credit cards */}
+          {creditCards.filter(a => !a.is_archived).length > 0 && (
+            <div className="mt-2 flex gap-3 overflow-x-auto">
+              {creditCards.filter(a => !a.is_archived).map((card) => {
+                const debt = Math.abs(Math.min(0, card.balance));
+                return (
+                  <div key={card.id} className="bg-red-500/20 rounded-xl px-3 py-2 flex-1 min-w-0">
+                    <p className="text-[10px] text-red-200/70 truncate">{card.icon} {card.name}</p>
+                    <p className="text-sm font-semibold font-mono mt-0.5 text-red-200">
+                      {debt > 0 ? `-${formatCOP(debt)}` : formatCOP(0)}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 

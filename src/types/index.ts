@@ -1,9 +1,13 @@
+export type AccountType = 'bank' | 'cash' | 'credit_card';
+
 export interface Account {
   id: string;
   name: string;
   icon: string;
   color: string;
   is_archived: boolean;
+  account_type: AccountType;
+  credit_limit: number;
   created_at: string;
 }
 

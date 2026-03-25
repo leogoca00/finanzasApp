@@ -7,6 +7,7 @@ import { Dashboard } from '@/components/dashboard/Dashboard';
 import { TransactionList } from '@/components/transactions/TransactionList';
 import { TransactionForm } from '@/components/transactions/TransactionForm';
 import { TransactionFilters } from '@/components/transactions/TransactionFilters';
+import { PayCardModal } from '@/components/accounts/PayCardModal';
 import { AccountsView } from '@/components/accounts/AccountsView';
 import { BudgetsView } from '@/components/budgets/BudgetsView';
 import {
@@ -30,6 +31,7 @@ export default function Home() {
   const [tab, setTab] = useState('dashboard');
   const [showNewTx, setShowNewTx] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [payCardId, setPayCardId] = useState<string | null>(null);
 
   // Data
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -123,7 +125,7 @@ export default function Home() {
     showToast('Transacción eliminada');
   };
 
-  const handleCreateAccount = async (data: { name: string; icon: string; color: string }) => {
+  const handleCreateAccount = async (data: { name: string; icon: string; color: string; account_type: string; credit_limit?: number }) => {
     await createAccount(data);
     await loadBase();
     showToast('Cuenta creada');
@@ -240,6 +242,7 @@ export default function Home() {
             accounts={accountBalances}
             onCreateAccount={handleCreateAccount}
             onDeleteAccount={handleDeleteAccount}
+            onPayCard={(cardId) => setPayCardId(cardId)}
           />
         )}
       </main>
@@ -272,6 +275,19 @@ export default function Home() {
         onApply={setFilters}
         accounts={accounts}
         categories={categories}
+      />
+
+      <PayCardModal
+        open={!!payCardId}
+        cardId={payCardId}
+        onClose={() => setPayCardId(null)}
+        accounts={accountBalances}
+        onSubmit={async (data) => {
+          await createTransaction(data);
+          await reloadAll();
+          setPayCardId(null);
+          showToast('Pago de tarjeta registrado');
+        }}
       />
 
       {/* Toast */}
