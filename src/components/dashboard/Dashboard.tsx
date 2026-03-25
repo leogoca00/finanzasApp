@@ -113,6 +113,42 @@ export function Dashboard({ accounts, summary, month, year, onPrevMonth, onNextM
         </div>
       )}
 
+      {/* Quick Stats: daily avg + savings rate */}
+      {summary && summary.totalExpenses > 0 && (
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-white rounded-2xl p-4 shadow-card">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500 text-sm">⌀</div>
+              <span className="text-xs font-medium text-gray-400">Gasto diario</span>
+            </div>
+            <p className="text-lg font-bold font-mono text-gray-800">{formatCOP(summary.dailyAvgExpense)}</p>
+            <p className="text-[10px] text-gray-400 mt-1">
+              Proyección: {formatCOP(summary.projectedMonthExpense)}
+            </p>
+          </div>
+          <div className="bg-white rounded-2xl p-4 shadow-card">
+            <div className="flex items-center gap-2 mb-2">
+              <div className={cn(
+                'w-8 h-8 rounded-lg flex items-center justify-center text-sm',
+                summary.savingsRate >= 20 ? 'bg-green-50 text-green-500' : summary.savingsRate >= 0 ? 'bg-yellow-50 text-yellow-500' : 'bg-red-50 text-red-500'
+              )}>
+                {summary.savingsRate >= 20 ? '🟢' : summary.savingsRate >= 0 ? '🟡' : '🔴'}
+              </div>
+              <span className="text-xs font-medium text-gray-400">Ahorro</span>
+            </div>
+            <p className={cn(
+              'text-lg font-bold font-mono',
+              summary.savingsRate >= 20 ? 'text-green-600' : summary.savingsRate >= 0 ? 'text-yellow-600' : 'text-red-500'
+            )}>
+              {Math.round(summary.savingsRate)}%
+            </p>
+            <p className="text-[10px] text-gray-400 mt-1">
+              {summary.savingsRate >= 20 ? 'Buen ritmo' : summary.savingsRate >= 0 ? 'Ajustado' : 'Gastando más que ingresos'}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Chart */}
       {chartData && (
         <div className="bg-white rounded-2xl p-5 shadow-card">

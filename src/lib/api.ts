@@ -1,6 +1,6 @@
 import { supabase } from './supabase';
 import { Account, AccountWithBalance, Category, Transaction, Budget, TransactionFormData, FilterState } from '@/types';
-import { generateTransferId, getMonthRange } from './utils';
+import { generateTransferId, getMonthRange, getDaysElapsedInMonth, getTotalDaysInMonth, getAllDatesInMonth } from './utils';
 
 // ==================== ACCOUNTS ====================
 
@@ -250,10 +250,44 @@ export async function getMonthSummary(month: number, year: number) {
       categoryMap[catId].total += t.amount;
     });
 
+  // Stats calculations
+  const daysElapsed = getDaysElapsedInMonth(month, year);
+  const daysInMonth = getTotalDaysInMonth(month, year);
+  const dailyAvgExpense = daysElapsed > 0 ? totalExpenses / daysElapsed : 0;
+  const projectedMonthExpense = dailyAvgExpense * daysInMonth;
+  const savingsRate = totalIncome > 0 ? ((totalIncome - totalExpenses) / totalIncome) * 100 : 0;
+
+  // Daily expense breakdown
+  const dailyMap: Record<string, number> = {};
+  transactions
+    .filter((t) => t.type === 'expense')
+    .forEach((t) => {
+      dailyMap[t.date] = (dailyMap[t.date] || 0) + t.amount;
+    });
+
+  const allDates = getAllDatesInMonth(month, year);
+  const dailyExpenses = allDates.map((date) => ({
+    date,
+    total: dailyMap[date] || 0,
+  }));
+
   return {
     totalIncome,
     totalExpenses,
     balance: totalIncome - totalExpenses,
     byCategory: Object.values(categoryMap).sort((a, b) => b.total - a.total),
+    dailyAvgExpense,
+    projectedMonthExpense,
+    savingsRate,
+    daysElapsed,
+    daysInMonth,
+    dailyExpenses,
   };
+}
+
+export async function getPreviousMonthSummary(month: number, year: number) {
+  let prevMonth = month - 1;
+  let prevYear = year;
+  if (prevMonth < 1) { prevMonth = 12; prevYear--; }
+  return getMonthSummary(prevMonth, prevYear);
 }

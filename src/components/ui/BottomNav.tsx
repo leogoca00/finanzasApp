@@ -10,6 +10,7 @@ interface NavProps {
 const tabs = [
   { id: 'dashboard', label: 'Inicio', icon: '📊' },
   { id: 'transactions', label: 'Movimientos', icon: '💸' },
+  { id: 'stats', label: 'Stats', icon: '📈' },
   { id: 'budgets', label: 'Presupuesto', icon: '🎯' },
   { id: 'accounts', label: 'Cuentas', icon: '🏦' },
 ];

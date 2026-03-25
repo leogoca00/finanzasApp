@@ -74,4 +74,20 @@ export interface MonthSummary {
   totalExpenses: number;
   balance: number;
   byCategory: { category: Category; total: number }[];
+  // Stats fields
+  dailyAvgExpense: number;
+  projectedMonthExpense: number;
+  savingsRate: number;
+  daysElapsed: number;
+  daysInMonth: number;
+  dailyExpenses: { date: string; total: number }[];
+}
+
+export interface MonthComparison {
+  currentIncome: number;
+  currentExpenses: number;
+  currentSavingsRate: number;
+  previousIncome: number;
+  previousExpenses: number;
+  previousSavingsRate: number;
 }

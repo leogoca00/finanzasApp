@@ -1,4 +1,4 @@
-import { format, startOfMonth, endOfMonth } from 'date-fns';
+import { format, startOfMonth, endOfMonth, getDaysInMonth as fnsGetDaysInMonth, differenceInDays, eachDayOfInterval } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 export function formatCOP(amount: number): string {
@@ -77,4 +77,35 @@ export function exportToCSV(data: Record<string, unknown>[], filename: string) {
   link.download = `${filename}.csv`;
   link.click();
   URL.revokeObjectURL(link.href);
+}
+
+export function getDaysElapsedInMonth(month: number, year: number): number {
+  const now = new Date();
+  const currentMonth = now.getMonth() + 1;
+  const currentYear = now.getFullYear();
+
+  if (year === currentYear && month === currentMonth) {
+    return now.getDate();
+  }
+  // Past or future month — return total days
+  return fnsGetDaysInMonth(new Date(year, month - 1, 1));
+}
+
+export function getTotalDaysInMonth(month: number, year: number): number {
+  return fnsGetDaysInMonth(new Date(year, month - 1, 1));
+}
+
+export function isCurrentMonth(month: number, year: number): boolean {
+  const now = new Date();
+  return now.getMonth() + 1 === month && now.getFullYear() === year;
+}
+
+export function getAllDatesInMonth(month: number, year: number): string[] {
+  const start = new Date(year, month - 1, 1);
+  const end = endOfMonth(start);
+  return eachDayOfInterval({ start, end }).map((d) => format(d, 'yyyy-MM-dd'));
+}
+
+export function formatPercent(value: number): string {
+  return `${Math.round(value)}%`;
 }

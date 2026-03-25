@@ -10,6 +10,7 @@ import { TransactionFilters } from '@/components/transactions/TransactionFilters
 import { PayCardModal } from '@/components/accounts/PayCardModal';
 import { AccountsView } from '@/components/accounts/AccountsView';
 import { BudgetsView } from '@/components/budgets/BudgetsView';
+import { StatsView } from '@/components/stats/StatsView';
 import {
   getAccounts,
   getAccountBalances,
@@ -18,6 +19,7 @@ import {
   createTransaction,
   deleteTransaction,
   getMonthSummary,
+  getPreviousMonthSummary,
   createAccount,
   deleteAccount,
   getBudgets,
@@ -40,6 +42,7 @@ export default function Home() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [summary, setSummary] = useState<MonthSummary | null>(null);
+  const [prevSummary, setPrevSummary] = useState<MonthSummary | null>(null);
 
   // Filters
   const [filters, setFilters] = useState<FilterState>({ dateFrom: '', dateTo: '', accountId: '', categoryId: '', type: '' });
@@ -77,8 +80,12 @@ export default function Home() {
 
   const loadSummary = useCallback(async () => {
     try {
-      const s = await getMonthSummary(month, year);
+      const [s, ps] = await Promise.all([
+        getMonthSummary(month, year),
+        getPreviousMonthSummary(month, year),
+      ]);
       setSummary(s);
+      setPrevSummary(ps);
     } catch (err) {
       console.error('Error loading summary:', err);
     }
@@ -234,6 +241,17 @@ export default function Home() {
             onNextMonth={() => navigateMonth(1)}
             onUpsert={handleUpsertBudget}
             onDelete={handleDeleteBudget}
+          />
+        )}
+
+        {tab === 'stats' && (
+          <StatsView
+            summary={summary}
+            prevSummary={prevSummary}
+            month={month}
+            year={year}
+            onPrevMonth={() => navigateMonth(-1)}
+            onNextMonth={() => navigateMonth(1)}
           />
         )}
 
